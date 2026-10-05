@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, ShieldAlert, LogIn, LogOut, User, Flame } from 'lucide-react';
+import { ShieldAlert, LogIn, LogOut } from 'lucide-react';
 import { USER_ROLES } from '../utils/constants';
 import { useAuthContext } from '../context/AuthContext';
 
@@ -10,7 +10,7 @@ export const Navbar = ({ currentRole, onRoleChange, onNewReportClick, onOpenAuth
     <header
       style={{
         borderBottom: '1px solid var(--border-subtle)',
-        padding: '0.85rem 2rem',
+        padding: '0.75rem 2rem',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -24,71 +24,76 @@ export const Navbar = ({ currentRole, onRoleChange, onNewReportClick, onOpenAuth
         gap: '1rem'
       }}
     >
-      {/* Brand Identity */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-        <div
+      {/* Brand Identity / Logo */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <a
+          href="/"
           style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '10px',
-            background: 'linear-gradient(135deg, #3b82f6, #10b981)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 14px rgba(59, 130, 246, 0.4)'
+            textDecoration: 'none',
+            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(241, 245, 249, 0.92))',
+            padding: '4px 12px 4px 6px',
+            borderRadius: '10px',
+            boxShadow: '0 2px 12px rgba(0, 0, 0, 0.35)',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            transition: 'transform 0.15s ease, box-shadow 0.15s ease'
           }}
+          title="Cafeteria Incident Tracker"
         >
-          <ShieldCheck size={22} color="#ffffff" />
-        </div>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <h1 style={{ fontSize: '1.15rem', fontWeight: 800, letterSpacing: '-0.02em', margin: 0 }}>
-              UniSafe Dining
-            </h1>
+          <img
+            src="/logo.svg"
+            alt="Cafeteria Incident Tracker"
+            style={{
+              height: '38px',
+              width: 'auto',
+              display: 'block'
+            }}
+          />
+        </a>
+
+        {/* Live Status and Firebase Indicator */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap' }}>
+          <span
+            style={{
+              fontSize: '0.65rem',
+              padding: '0.15rem 0.45rem',
+              borderRadius: '4px',
+              background: 'rgba(59, 130, 246, 0.2)',
+              color: '#60a5fa',
+              fontWeight: 700,
+              textTransform: 'uppercase'
+            }}
+          >
+            Live QA
+          </span>
+          {/* Firebase Connected Indicator */}
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              fontSize: '0.65rem',
+              padding: '0.15rem 0.45rem',
+              borderRadius: '999px',
+              background: 'rgba(16, 185, 129, 0.15)',
+              color: '#34d399',
+              border: '1px solid rgba(16, 185, 129, 0.3)',
+              fontWeight: 600
+            }}
+            title="Connected to Firebase Authentication: jaaamin-rox"
+          >
             <span
               style={{
-                fontSize: '0.65rem',
-                padding: '0.15rem 0.45rem',
-                borderRadius: '4px',
-                background: 'rgba(59, 130, 246, 0.2)',
-                color: '#60a5fa',
-                fontWeight: 700,
-                textTransform: 'uppercase'
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                backgroundColor: '#10b981',
+                boxShadow: '0 0 6px #10b981'
               }}
-            >
-              Live QA
-            </span>
-            {/* Firebase Connected Indicator */}
-            <span
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                fontSize: '0.65rem',
-                padding: '0.15rem 0.45rem',
-                borderRadius: '999px',
-                background: 'rgba(16, 185, 129, 0.15)',
-                color: '#34d399',
-                border: '1px solid rgba(16, 185, 129, 0.3)',
-                fontWeight: 600
-              }}
-              title="Connected to Firebase Authentication: jaaamin-rox"
-            >
-              <span
-                style={{
-                  width: '6px',
-                  height: '6px',
-                  borderRadius: '50%',
-                  backgroundColor: '#10b981',
-                  boxShadow: '0 0 6px #10b981'
-                }}
-              />
-              Firebase: jaaamin-rox
-            </span>
-          </div>
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>
-            University Food Quality & Incident Management
-          </p>
+            />
+            Firebase: jaaamin-rox
+          </span>
         </div>
       </div>
 

@@ -1,0 +1,68 @@
+{
+  "name": "Cafeteria Incident Tracker - University Food Quality",
+  "short_name": "Incident Tracker",
+  "description": "University Food Quality Assurance, Incident Reporting & Safety Management System",
+  "start_url": "/",
+  "id": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#07090e",
+  "theme_color": "#0f172a",
+  "orientation": "any",
+  "categories": ["utilities", "productivity", "food"],
+  "icons": [
+    {
+      "src": "/favicon-64.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo-128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo-256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo-mark.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Report Food Hazard",
+      "short_name": "Report Hazard",
+      "description": "Log an incident or hazard in campus dining",
+      "url": "/?action=report",
+      "icons": [
+        {
+          "src": "/logo-128.png",
+          "sizes": "128x128"
+        }
+      ]
+    },
+    {
+      "name": "Safety Dashboard",
+      "short_name": "Dashboard",
+      "description": "View live incidents and dining facilities",
+      "url": "/",
+      "icons": [
+        {
+          "src": "/logo-128.png",
+          "sizes": "128x128"
+        }
+      ]
+    }
+  ]
+}
