@@ -1,15 +1,10 @@
-# University Food Quality Assurance & Incident Reporting System
-
-A comprehensive web application that enables university students, dining hall staff, and campus administrators to collaborate on food safety, transparency, and dining standards.
-
-## Project Structure
-
-```
+# Directory structure
 university-food-quality-system/
 │
 ├── backend/
 │   │
 │   ├── src/
+│   │   │
 │   │   ├── config/
 │   │   │   ├── database.js
 │   │   │   └── firebase.js
@@ -62,54 +57,69 @@ university-food-quality-system/
 │   │   └── server.js
 │   │
 │   ├── uploads/
+│   │
+│   ├── .env
 │   ├── .env.example
 │   ├── .gitignore
 │   ├── package.json
 │   └── README.md
+│
 │
 ├── frontend/
 │   │
 │   ├── src/
+│   │   │
 │   │   ├── components/
+│   │   │
 │   │   ├── pages/
+│   │   │
 │   │   ├── services/
+│   │   │
 │   │   ├── hooks/
+│   │   │
 │   │   ├── context/
+│   │   │
 │   │   ├── routes/
+│   │   │
 │   │   ├── utils/
+│   │   │
 │   │   ├── config/
+│   │   │
 │   │   ├── App.jsx
 │   │   └── main.jsx
 │   │
+│   ├── .env
 │   ├── .env.example
 │   ├── .gitignore
 │   ├── package.json
 │   └── README.md
 │
+│
 ├── .gitignore
 └── README.md
-```
+# tech stack
+Frontend
+├── React
+└── JavaScript + Vite
 
-## Tech Stack
+Backend
+├── Node.js
+└── Express.js
 
-- **Frontend**: React, Vite, JavaScript
-- **Backend**: Node.js, Express.js (Layered Repository-Service-Controller Architecture)
-- **Database**: MongoDB with Mongoose ODM
-- **Authentication**: Firebase Authentication (ID Tokens verified via Firebase Admin SDK)
-- **File Uploads**: Multer (Local disk storage under `backend/uploads/`)
+Database
+├── MongoDB
+└── Mongoose
 
-## Quick Start
+Authentication
+└── Firebase Authentication
 
-### 1. Backend Setup
-```bash
-cd backend
-npm install
-npm run dev
-```
+Backend Utilities
+├── dotenv
+└── cors
 
-### 2. Frontend Setup
-```bash
-cd frontend
-npm install
-npm run dev
-```
+File Upload
+└── Multer
+
+Development
+├── npm
+└── Git
