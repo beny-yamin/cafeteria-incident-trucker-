@@ -3,12 +3,13 @@ const app = require('./app');
 const connectDB = require('./config/database');
 
 const PORT = process.env.PORT || 5000;
+const HOST = process.env.HOST || '0.0.0.0';
 
 connectDB()
   .then(() => {
-    const server = app.listen(PORT, () => {
-      console.log(`Food Quality System Backend running on port ${PORT}`);
-      console.log(`Health check: http://localhost:${PORT}/api/v1/health`);
+    const server = app.listen(PORT, HOST, () => {
+      console.log(`Food Quality System Backend running on ${HOST}:${PORT}`);
+      console.log(`Health check: http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}/api/v1/health`);
     });
 
     const shutdown = (signal) => {

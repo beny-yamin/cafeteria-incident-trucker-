@@ -2,6 +2,7 @@ import React from 'react';
 import StatusBadge from './StatusBadge';
 import SeverityBadge from './SeverityBadge';
 import { Clock, MapPin, AlertCircle, FileText, CheckCircle2, User, ChevronRight } from 'lucide-react';
+import { API_URL } from '../services';
 
 export const IncidentCard = ({ incident, onAction, userRole = 'student' }) => {
   const hallName = incident.hallId?.name || 'Unknown Dining Hall';
@@ -61,7 +62,7 @@ export const IncidentCard = ({ incident, onAction, userRole = 'student' }) => {
       {incident.imageUrl && (
         <div style={{ borderRadius: 'var(--radius-md)', overflow: 'hidden', maxHeight: '180px', width: 'fit-content' }}>
           <img
-            src={incident.imageUrl}
+            src={incident.imageUrl.startsWith('/') ? `${API_URL}${incident.imageUrl}` : incident.imageUrl}
             alt="Incident evidence"
             style={{ width: '100%', maxHeight: '180px', objectFit: 'cover', display: 'block' }}
           />

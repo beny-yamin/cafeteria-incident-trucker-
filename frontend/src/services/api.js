@@ -1,4 +1,6 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+// Standardized backend API URL from VITE_API_URL
+const rawApiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/+$/, '');
+export const API_URL = rawApiUrl.replace(/\/api(\/v1)?$/, '');
 
 async function request(endpoint, options = {}) {
   const token = localStorage.getItem('token');
@@ -14,7 +16,18 @@ async function request(endpoint, options = {}) {
     headers['Content-Type'] = 'application/json';
   }
 
-  let url = `${BASE_URL}${endpoint}`;
+  // Construct target URL
+  let url;
+  if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
+    url = endpoint;
+  } else {
+    const cleanPath = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    if (cleanPath.startsWith('/api/v1/') || cleanPath.startsWith('/api/')) {
+      url = `${API_URL}${cleanPath}`;
+    } else {
+      url = `${API_URL}/api/v1${cleanPath}`;
+    }
+  }
   if (options.params) {
     const searchParams = new URLSearchParams();
     Object.entries(options.params).forEach(([key, val]) => {

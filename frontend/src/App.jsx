@@ -6,7 +6,8 @@ import {
   authService,
   diningHallService,
   incidentReportService,
-  userService
+  userService,
+  API_URL
 } from './services';
 import { USER_ROLES } from './utils/constants';
 import { useAuthContext } from './context/AuthContext';
@@ -95,7 +96,7 @@ function App() {
       }
     } catch (err) {
       console.error('Error loading data from backend:', err);
-      setApiError(err.message || 'Could not connect to backend API server at http://localhost:5000');
+      setApiError(err.message || `Could not connect to backend API server at ${API_URL}`);
     } finally {
       setIsLoading(false);
     }
@@ -228,7 +229,7 @@ function App() {
             <strong>University Food Quality Assurance & Incident Reporting System</strong>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <span>Backend: Express + MongoDB (Port 5000)</span>
+            <span>Backend: Express + MongoDB</span>
             <span>•</span>
             <span style={{ color: '#10b981' }}>Firebase Auth: jaaamin-rox</span>
             <span>•</span>
