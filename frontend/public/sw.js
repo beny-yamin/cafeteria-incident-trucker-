@@ -39,8 +39,14 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Only handle GET requests and skip API requests or non-http protocols
-  if (event.request.method !== 'GET' || event.request.url.includes('/api/')) {
+  const requestUrl = event.request.url;
+
+  // Only handle GET requests with http/https schemes; skip API requests and unsupported schemes (e.g. chrome-extension, moz-extension)
+  if (
+    event.request.method !== 'GET' ||
+    !(requestUrl.startsWith('http://') || requestUrl.startsWith('https://')) ||
+    requestUrl.includes('/api/')
+  ) {
     return;
   }
 
@@ -50,14 +56,20 @@ self.addEventListener('fetch', (event) => {
         return cachedResponse;
       }
       return fetch(event.request).then((response) => {
-        // Cache static asset clones
+        // Cache static asset clones (only valid http/https responses)
         if (
           response &&
           response.status === 200 &&
-          (event.request.url.includes('/assets/') || event.request.url.match(/\.(png|svg|ico|js|css)$/))
+          (requestUrl.includes('/assets/') || requestUrl.match(/\.(png|svg|ico|js|css)$/))
         ) {
           const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          caches
+            .open(CACHE_NAME)
+            .then((cache) => cache.put(event.request, clone))
+            .catch((err) => {
+              // Silently ignore cache storage errors on unsupported schemes/responses
+              console.warn('Cache put skipped or unsupported:', err);
+            });
         }
         return response;
       }).catch(() => {
