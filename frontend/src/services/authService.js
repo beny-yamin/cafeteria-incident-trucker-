@@ -8,6 +8,8 @@ import {
 import { auth, googleProvider } from '../config/firebase';
 import api from './api';
 
+let inFlightSyncPromise = null;
+
 export const authService = {
   setToken(token) {
     if (token) {
@@ -66,8 +68,16 @@ export const authService = {
   },
 
   async syncUser(payload = {}) {
-    const res = await api.post('/auth/sync', payload);
-    return res.data;
+    if (inFlightSyncPromise) {
+      return inFlightSyncPromise;
+    }
+    inFlightSyncPromise = api
+      .post('/auth/sync', payload)
+      .then((res) => res.data)
+      .finally(() => {
+        inFlightSyncPromise = null;
+      });
+    return inFlightSyncPromise;
   },
 
   async getMe() {
