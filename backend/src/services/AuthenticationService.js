@@ -5,11 +5,14 @@ const { USER_ROLES } = require('../utils/constants');
 
 class AuthenticationService {
   async verifyFirebaseToken(idToken) {
-    // Development fallback when testing locally with mock tokens
-    if (
-      (process.env.NODE_ENV === 'development' || !process.env.FIREBASE_CLIENT_EMAIL) &&
-      (idToken.startsWith('mock-') || idToken.startsWith('dev-') || idToken.startsWith('test-'))
-    ) {
+    const isMockToken =
+      idToken.startsWith('mock-') || idToken.startsWith('dev-') || idToken.startsWith('test-');
+    const allowMock =
+      process.env.NODE_ENV === 'development' ||
+      !process.env.FIREBASE_CLIENT_EMAIL ||
+      process.env.ALLOW_DEMO_TOKENS === 'true';
+
+    if (isMockToken && allowMock) {
       const parts = idToken.split('-');
       const roleHint = parts[1] || 'student';
       const role = ['admin', 'inspector', 'student'].includes(roleHint) ? roleHint : 'student';
@@ -18,6 +21,15 @@ class AuthenticationService {
         email: `${role}@university.edu`,
         name: `Dev ${role.charAt(0).toUpperCase() + role.slice(1)}`
       };
+    }
+
+    if (isMockToken && !allowMock) {
+      throw new ApiError(401, 'Demo mock tokens are disabled in production. Please sign in with Firebase.');
+    }
+
+    // Ensure token is a valid string with 3 JWT segments before calling Firebase Admin
+    if (typeof idToken !== 'string' || idToken.split('.').length !== 3) {
+      throw new ApiError(401, 'Malformed token: Expected a valid Firebase ID token (JWT format).');
     }
 
     try {

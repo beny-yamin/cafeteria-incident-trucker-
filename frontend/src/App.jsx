@@ -20,7 +20,7 @@ const SEED_HALLS = [
 ];
 
 function App() {
-  const { currentUser: firebaseUser, mongoUser, loading: authLoading } = useAuthContext();
+  const { currentUser: firebaseUser, mongoUser, loading: authLoading, demoRole } = useAuthContext();
   const [currentRole, setCurrentRole] = useState(USER_ROLES.STUDENT);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
@@ -35,8 +35,10 @@ function App() {
     if (mongoUser && mongoUser.role) {
       setCurrentRole(mongoUser.role);
       setCurrentUser(mongoUser);
+    } else if (!firebaseUser && !demoRole) {
+      setCurrentUser(null);
     }
-  }, [mongoUser]);
+  }, [mongoUser, firebaseUser, demoRole]);
 
   // Sync token and role context
   const getTokenForRole = (role) => {
@@ -55,21 +57,29 @@ function App() {
   };
 
   const loadData = useCallback(async () => {
+    if (authLoading) return;
+
     setIsLoading(true);
     setApiError(null);
 
-    // If no firebase user is logged in, use mock role token for developer preview
-    if (!firebaseUser) {
-      const token = getTokenForRole(currentRole);
+    // Only set mock role token if demoRole is explicitly active
+    if (!firebaseUser && demoRole) {
+      const token = getTokenForRole(demoRole);
       authService.setToken(token);
+    } else if (!firebaseUser) {
+      authService.removeToken();
     }
 
     try {
-      // 1. Sync User Profile with Backend
-      const user = await authService.syncUser();
-      setCurrentUser(user);
+      // 1. Sync User Profile with Backend ONLY if Firebase user is logged in or in demo mode
+      if (firebaseUser || demoRole) {
+        const user = await authService.syncUser();
+        setCurrentUser(user);
+      } else {
+        setCurrentUser(null);
+      }
 
-      // 2. Fetch Dining Halls
+      // 2. Fetch Dining Halls (Public)
       let fetchedHalls = await diningHallService.getAll();
 
       // Auto-seed sample halls if database is completely fresh
@@ -85,22 +95,29 @@ function App() {
       }
       setHalls(fetchedHalls || []);
 
-      // 3. Fetch Incidents (Role-scoped by backend)
-      const incidentsResponse = await incidentReportService.getAll();
-      setIncidents(incidentsResponse?.reports || []);
+      // 3. Fetch Incidents (Role-scoped by backend, requires auth)
+      if (firebaseUser || demoRole) {
+        const incidentsResponse = await incidentReportService.getAll();
+        setIncidents(incidentsResponse?.reports || []);
 
-      // 4. Fetch Inspectors (for Admin view)
-      if (currentRole === USER_ROLES.ADMIN) {
-        const inspResponse = await userService.getInspectors();
-        setInspectors(inspResponse?.inspectors || []);
+        // 4. Fetch Inspectors (for Admin view)
+        if (currentRole === USER_ROLES.ADMIN) {
+          const inspResponse = await userService.getInspectors();
+          setInspectors(inspResponse?.inspectors || []);
+        }
+      } else {
+        setIncidents([]);
+        setInspectors([]);
       }
     } catch (err) {
       console.error('Error loading data from backend:', err);
-      setApiError(err.message || `Could not connect to backend API server at ${API_URL}`);
+      if (firebaseUser || demoRole) {
+        setApiError(err.message || `Could not connect to backend API server at ${API_URL}`);
+      }
     } finally {
       setIsLoading(false);
     }
-  }, [currentRole, firebaseUser]);
+  }, [currentRole, firebaseUser, demoRole, authLoading]);
 
   useEffect(() => {
     loadData();
