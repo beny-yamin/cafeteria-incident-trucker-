@@ -15,11 +15,10 @@ export const AuthModal = ({ isOpen, onClose }) => {
     loginWithEmail,
     signupWithEmail,
     loginWithGoogle,
-    loginDemo,
     logout
   } = useAuthContext();
 
-  const [mode, setMode] = useState('login'); // 'login' | 'register' | 'demo'
+  const [mode, setMode] = useState('login'); // 'login' | 'register'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -116,23 +115,6 @@ export const AuthModal = ({ isOpen, onClose }) => {
     }
   };
 
-  const handleDemoLogin = async (targetRole) => {
-    setError(null);
-    setLoading(true);
-    try {
-      await loginDemo(targetRole);
-      setSuccessMsg(`Switched to demo ${targetRole} mode.`);
-      setTimeout(() => {
-        onClose();
-        resetForm();
-      }, 500);
-    } catch (err) {
-      setError('Failed to switch to demo role.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Firebase Authentication">
       {/* Active User Banner if logged in */}
@@ -216,23 +198,6 @@ export const AuthModal = ({ isOpen, onClose }) => {
           }}
         >
           Create Account
-        </button>
-        <button
-          onClick={() => handleModeChange('demo')}
-          style={{
-            flex: 1,
-            padding: '0.6rem 0.5rem',
-            fontSize: '0.85rem',
-            fontWeight: 600,
-            borderRadius: 'var(--radius-sm)',
-            border: 'none',
-            cursor: 'pointer',
-            backgroundColor: mode === 'demo' ? 'rgba(59, 130, 246, 0.2)' : 'transparent',
-            color: mode === 'demo' ? '#60a5fa' : 'var(--text-muted)',
-            transition: 'all 0.2s ease'
-          }}
-        >
-          ⚡ Quick Demo
         </button>
       </div>
 
@@ -390,87 +355,6 @@ export const AuthModal = ({ isOpen, onClose }) => {
             <UserPlus size={16} /> {loading ? 'Registering...' : 'Create Account'}
           </Button>
         </form>
-      )}
-
-      {/* Tab 3: Quick Demo Role Switcher */}
-      {mode === 'demo' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-          <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-            Instant evaluation mode: switch between pre-configured university accounts without typing credentials.
-          </p>
-
-          <button
-            onClick={() => handleDemoLogin(USER_ROLES.STUDENT)}
-            style={{
-              padding: '0.85rem 1rem',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--border-subtle)',
-              backgroundColor: 'rgba(59, 130, 246, 0.08)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              cursor: 'pointer',
-              color: 'var(--text-main)',
-              textAlign: 'left'
-            }}
-          >
-            <div>
-              <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#60a5fa' }}>Student Reporter</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                student@university.edu • File hazard reports & view dining halls
-              </div>
-            </div>
-            <Sparkles size={16} color="#60a5fa" />
-          </button>
-
-          <button
-            onClick={() => handleDemoLogin(USER_ROLES.INSPECTOR)}
-            style={{
-              padding: '0.85rem 1rem',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--border-subtle)',
-              backgroundColor: 'rgba(16, 185, 129, 0.08)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              cursor: 'pointer',
-              color: 'var(--text-main)',
-              textAlign: 'left'
-            }}
-          >
-            <div>
-              <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#34d399' }}>Food Safety Inspector</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                inspector@university.edu • Claim, investigate & resolve reports
-              </div>
-            </div>
-            <Shield size={16} color="#34d399" />
-          </button>
-
-          <button
-            onClick={() => handleDemoLogin(USER_ROLES.ADMIN)}
-            style={{
-              padding: '0.85rem 1rem',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--border-subtle)',
-              backgroundColor: 'rgba(239, 68, 68, 0.08)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              cursor: 'pointer',
-              color: 'var(--text-main)',
-              textAlign: 'left'
-            }}
-          >
-            <div>
-              <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#f87171' }}>Campus Administrator</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                admin@university.edu • Full oversight, manage halls & assign staff
-              </div>
-            </div>
-            <KeyRound size={16} color="#f87171" />
-          </button>
-        </div>
       )}
 
       {/* Footer Firebase Connection Metadata */}

@@ -515,11 +515,11 @@ export const AuthPage = () => {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                     <Sparkles size={16} color="#60a5fa" />
                     <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#f8fafc' }}>
-                      Instant Role Credentials
+                      Separate Role Accounts
                     </span>
                   </div>
                   <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                    Click to autofill
+                    1-click sign in
                   </span>
                 </div>
 

@@ -5,34 +5,15 @@ const { USER_ROLES } = require('../utils/constants');
 
 class AuthenticationService {
   async verifyFirebaseToken(idToken) {
-    const isMockToken =
-      idToken.startsWith('mock-') || idToken.startsWith('dev-') || idToken.startsWith('test-');
-    const allowMock = process.env.ALLOW_DEMO_TOKENS === 'true';
-
-    if (isMockToken && allowMock) {
-      const parts = idToken.split('-');
-      const roleHint = parts[1] || 'student';
-      const role = ['admin', 'inspector', 'student'].includes(roleHint) ? roleHint : 'student';
-      return {
-        uid: `dev-uid-${role}`,
-        email: `${role}@university.edu`,
-        name: `Dev ${role.charAt(0).toUpperCase() + role.slice(1)}`
-      };
-    }
-
-    if (isMockToken && !allowMock) {
-      throw new ApiError(401, 'Demo authentication is disabled. Please sign in with your real email and password.');
-    }
-
     // Ensure token is a valid string with 3 JWT segments before calling Firebase Admin
     if (typeof idToken !== 'string' || idToken.split('.').length !== 3) {
-      throw new ApiError(401, 'Malformed token: Expected a valid Firebase ID token (JWT format).');
+      throw new ApiError(401, 'Authentication required: Please sign in with your account.');
     }
 
     try {
       return await firebaseAdmin.auth().verifyIdToken(idToken);
     } catch (error) {
-      throw new ApiError(401, `Invalid or expired Firebase authentication token: ${error.message}`);
+      throw new ApiError(401, `Invalid or expired session token: ${error.message}`);
     }
   }
 
