@@ -3,16 +3,30 @@ import {
   createUserWithEmailAndPassword,
   signInWithPopup,
   signOut as firebaseSignOut,
-  updateProfile
+  updateProfile,
+  updatePassword,
+  sendPasswordResetEmail,
+  EmailAuthProvider,
+  reauthenticateWithCredential
 } from 'firebase/auth';
 import { auth, googleProvider } from '../config/firebase';
 import api from './api';
 
 let inFlightSyncPromise = null;
 
+// Purge legacy mock/dev tokens from localStorage on startup
+try {
+  const existingToken = localStorage.getItem('token');
+  if (existingToken && (existingToken.startsWith('mock-') || existingToken.startsWith('dev-') || existingToken.startsWith('test-'))) {
+    localStorage.removeItem('token');
+  }
+} catch (e) {
+  // Ignore localStorage access issues
+}
+
 export const authService = {
   setToken(token) {
-    if (token) {
+    if (token && typeof token === 'string' && !token.startsWith('mock-') && !token.startsWith('dev-') && !token.startsWith('test-')) {
       localStorage.setItem('token', token);
     } else {
       localStorage.removeItem('token');
@@ -58,6 +72,30 @@ export const authService = {
     return credential.user;
   },
 
+  async changePassword(newPassword, currentPassword = null) {
+    if (!auth.currentUser) {
+      throw new Error('No user is currently signed in.');
+    }
+    // If current password is provided, re-authenticate first to prevent requires-recent-login errors
+    if (currentPassword && auth.currentUser.email) {
+      const credential = EmailAuthProvider.credential(auth.currentUser.email, currentPassword);
+      await reauthenticateWithCredential(auth.currentUser, credential);
+    }
+    await updatePassword(auth.currentUser, newPassword);
+    // Refresh token after password change
+    const newToken = await auth.currentUser.getIdToken(true);
+    this.setToken(newToken);
+    return true;
+  },
+
+  async resetPassword(email) {
+    if (!email) {
+      throw new Error('Please provide an email address.');
+    }
+    await sendPasswordResetEmail(auth, email);
+    return true;
+  },
+
   async logout() {
     try {
       await firebaseSignOut(auth);
@@ -68,6 +106,13 @@ export const authService = {
   },
 
   async syncUser(payload = {}) {
+    // If not authenticated with Firebase or holding a mock token, do not attempt backend sync
+    const currentToken = this.getToken();
+    if (!auth.currentUser && (!currentToken || currentToken.startsWith('mock-') || currentToken.startsWith('dev-') || currentToken.startsWith('test-'))) {
+      if (currentToken) this.removeToken();
+      return null;
+    }
+
     if (inFlightSyncPromise) {
       return inFlightSyncPromise;
     }

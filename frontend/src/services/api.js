@@ -1,14 +1,36 @@
+import { auth } from '../config/firebase';
+
 // Standardized backend API URL from VITE_API_URL
 const rawApiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/+$/, '');
 export const API_URL = rawApiUrl.replace(/\/api(\/v1)?$/, '');
 
 async function request(endpoint, options = {}) {
-  const token = localStorage.getItem('token');
+  let token = localStorage.getItem('token');
+
+  // Automatically purge any legacy mock/dev tokens from localStorage
+  if (token && (token.startsWith('mock-') || token.startsWith('dev-') || token.startsWith('test-'))) {
+    localStorage.removeItem('token');
+    token = null;
+  }
+
+  // If a real Firebase user is signed in, prefer their current ID token
+  if (auth.currentUser) {
+    try {
+      token = await auth.currentUser.getIdToken();
+      if (token) {
+        localStorage.setItem('token', token);
+      }
+    } catch (e) {
+      // Fall back to existing token if network fails
+    }
+  }
+
   const headers = {
     ...options.headers
   };
 
-  if (token) {
+  // Only attach Authorization header if we have a valid token (never a mock token)
+  if (token && !token.startsWith('mock-') && !token.startsWith('dev-') && !token.startsWith('test-')) {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
@@ -48,6 +70,9 @@ async function request(endpoint, options = {}) {
 
   const data = await response.json();
   if (!response.ok) {
+    if (response.status === 401) {
+      localStorage.removeItem('token');
+    }
     const error = new Error(data.message || 'API request failed');
     error.status = response.status;
     error.data = data;

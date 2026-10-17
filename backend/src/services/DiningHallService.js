@@ -5,18 +5,15 @@ class DiningHallService {
   async getAllDiningHalls(filter = {}, options = {}) {
     return await diningHallRepository.findAll(filter, options);
   }
-
   async getActiveDiningHalls() {
     return await diningHallRepository.findActive();
   }
-
   async getDiningHallsByCampus(campus, activeOnly = false) {
     if (!campus || !campus.trim()) {
       throw new ApiError(400, 'Campus parameter is required');
     }
     return await diningHallRepository.findByCampus(campus, activeOnly);
   }
-
   async getDiningHallById(id) {
     const diningHall = await diningHallRepository.findById(id);
     if (!diningHall) {
@@ -24,7 +21,6 @@ class DiningHallService {
     }
     return diningHall;
   }
-
   async createDiningHall(data) {
     const existing = await diningHallRepository.findByName(data.name);
     if (existing) {
@@ -40,7 +36,6 @@ class DiningHallService {
 
     return await diningHallRepository.create(payload);
   }
-
   async updateDiningHall(id, data) {
     const diningHall = await diningHallRepository.findById(id);
     if (!diningHall) {

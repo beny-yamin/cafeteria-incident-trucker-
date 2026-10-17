@@ -58,6 +58,27 @@ backend/
    npm start
    ```
 
+## Pre-Configured Role Accounts (Firebase & MongoDB)
+
+The system includes pre-configured instance accounts for all three roles. You can sign in immediately using these credentials or the 1-click autofill on the authentication page:
+
+| Role | Email | Default Password | Initial View |
+| :--- | :--- | :--- | :--- |
+| **Student Reporter** | `student@university.edu` | `Student123!` | Student Dashboard (Report hazards, view halls) |
+| **Safety Inspector** | `inspector@university.edu` | `Inspector123!` | Inspector Triage (Claim & resolve reports) |
+| **Campus Administrator** | `admin@university.edu` | `Admin123!` | Campus Admin (Manage halls & assign staff) |
+
+### Re-sync or Reset Default Accounts:
+To re-sync these accounts in MongoDB, run:
+```bash
+npm run seed:accounts
+```
+
+### Changing Account Passwords:
+1. **Via Dashboard**: When signed into any account, click the **Password** button in the top navigation bar to change your password immediately.
+2. **Via Forgot Password**: Click "Forgot password?" on the Sign In page to receive a password reset link to your email.
+3. **Via Firebase Console**: In your Firebase project (`jaaamin-rox`) under **Authentication > Users**, you can edit passwords directly.
+
 ## API Endpoints Overview
 
 - `GET /api/v1/health` - Server health check

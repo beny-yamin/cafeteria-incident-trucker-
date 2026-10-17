@@ -19,7 +19,7 @@ connectDB()
         process.exit(0);
       });
     };
-
+    
     process.on('SIGTERM', () => shutdown('SIGTERM'));
     process.on('SIGINT', () => shutdown('SIGINT'));
   })

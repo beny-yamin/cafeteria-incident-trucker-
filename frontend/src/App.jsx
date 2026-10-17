@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Navbar from './components/Navbar';
-import AuthModal from './components/AuthModal';
+import AuthPage from './pages/AuthPage';
+import ChangePasswordModal from './components/ChangePasswordModal';
 import AppRoutes from './routes/AppRoutes';
 import {
   authService,
@@ -20,9 +21,9 @@ const SEED_HALLS = [
 ];
 
 function App() {
-  const { currentUser: firebaseUser, mongoUser, loading: authLoading, demoRole } = useAuthContext();
+  const { currentUser: firebaseUser, mongoUser, loading: authLoading } = useAuthContext();
   const [currentRole, setCurrentRole] = useState(USER_ROLES.STUDENT);
-  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [halls, setHalls] = useState([]);
   const [inspectors, setInspectors] = useState([]);
@@ -30,60 +31,35 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState(null);
 
-  // When Firebase user profile syncs, align active view role if appropriate
+  // When authenticated user's database profile syncs, lock active view to their role
   useEffect(() => {
     if (mongoUser && mongoUser.role) {
       setCurrentRole(mongoUser.role);
       setCurrentUser(mongoUser);
-    } else if (!firebaseUser && !demoRole) {
+    } else if (!firebaseUser) {
       setCurrentUser(null);
+      setCurrentRole(USER_ROLES.STUDENT);
     }
-  }, [mongoUser, firebaseUser, demoRole]);
-
-  // Sync token and role context
-  const getTokenForRole = (role) => {
-    if (firebaseUser) {
-      return authService.getToken();
-    }
-    switch (role) {
-      case USER_ROLES.INSPECTOR:
-        return 'mock-inspector-token';
-      case USER_ROLES.ADMIN:
-        return 'mock-admin-token';
-      case USER_ROLES.STUDENT:
-      default:
-        return 'mock-student-token';
-    }
-  };
+  }, [mongoUser, firebaseUser]);
 
   const loadData = useCallback(async () => {
-    if (authLoading) return;
+    if (authLoading || !firebaseUser) return;
 
     setIsLoading(true);
     setApiError(null);
 
-    // Only set mock role token if demoRole is explicitly active
-    if (!firebaseUser && demoRole) {
-      const token = getTokenForRole(demoRole);
-      authService.setToken(token);
-    } else if (!firebaseUser) {
-      authService.removeToken();
-    }
-
     try {
-      // 1. Sync User Profile with Backend ONLY if Firebase user is logged in or in demo mode
-      if (firebaseUser || demoRole) {
-        const user = await authService.syncUser();
-        setCurrentUser(user);
-      } else {
-        setCurrentUser(null);
-      }
+      // 1. Sync User Profile with Backend
+      const user = await authService.syncUser();
+      setCurrentUser(user);
 
-      // 2. Fetch Dining Halls (Public)
+      const activeRole = user?.role || mongoUser?.role || currentRole;
+
+      // 2. Fetch Dining Halls
       let fetchedHalls = await diningHallService.getAll();
 
-      // Auto-seed sample halls if database is completely fresh
-      if ((!fetchedHalls || fetchedHalls.length === 0) && currentRole === USER_ROLES.ADMIN) {
+      // Auto-seed sample halls if database is completely fresh (Admin only)
+      if ((!fetchedHalls || fetchedHalls.length === 0) && activeRole === USER_ROLES.ADMIN) {
         for (const seed of SEED_HALLS) {
           try {
             await diningHallService.create(seed);
@@ -96,32 +72,27 @@ function App() {
       setHalls(fetchedHalls || []);
 
       // 3. Fetch Incidents (Role-scoped by backend, requires auth)
-      if (firebaseUser || demoRole) {
-        const incidentsResponse = await incidentReportService.getAll();
-        setIncidents(incidentsResponse?.reports || []);
+      const incidentsResponse = await incidentReportService.getAll();
+      setIncidents(incidentsResponse?.reports || []);
 
-        // 4. Fetch Inspectors (for Admin view)
-        if (currentRole === USER_ROLES.ADMIN) {
-          const inspResponse = await userService.getInspectors();
-          setInspectors(inspResponse?.inspectors || []);
-        }
-      } else {
-        setIncidents([]);
-        setInspectors([]);
+      // 4. Fetch Inspectors (for Admin view)
+      if (activeRole === USER_ROLES.ADMIN) {
+        const inspResponse = await userService.getInspectors();
+        setInspectors(inspResponse?.inspectors || []);
       }
     } catch (err) {
       console.error('Error loading data from backend:', err);
-      if (firebaseUser || demoRole) {
-        setApiError(err.message || `Could not connect to backend API server at ${API_URL}`);
-      }
+      setApiError(err.message || `Could not connect to backend API server at ${API_URL}`);
     } finally {
       setIsLoading(false);
     }
-  }, [currentRole, firebaseUser, demoRole, authLoading]);
+  }, [firebaseUser, authLoading, currentRole, mongoUser?.role]);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    if (firebaseUser) {
+      loadData();
+    }
+  }, [firebaseUser, loadData]);
 
   // Actions connecting to backend
 
@@ -197,18 +168,67 @@ function App() {
     }
   };
 
+  // Screen 1: Loading state while verifying Firebase session
+  if (authLoading) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: 'column',
+          gap: '1.25rem',
+          backgroundColor: '#07090e',
+          color: 'var(--text-main)'
+        }}
+      >
+        <div
+          style={{
+            width: '42px',
+            height: '42px',
+            border: '3px solid rgba(59, 130, 246, 0.2)',
+            borderTopColor: '#3b82f6',
+            borderRadius: '50%',
+            animation: 'spin 0.75s linear infinite'
+          }}
+        />
+        <style>
+          {`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}
+        </style>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#f8fafc' }}>
+            Authenticating Session...
+          </div>
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+            Connecting to Firebase project jaaamin-rox
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Screen 2: Dedicated Authentication Page if not logged in
+  if (!firebaseUser) {
+    return <AuthPage />;
+  }
+
+  // Screen 3: Authenticated User Application View (Role-based Dashboard)
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Navbar
         currentRole={currentRole}
-        onRoleChange={setCurrentRole}
-        onNewReportClick={() => setCurrentRole(USER_ROLES.STUDENT)}
-        onOpenAuth={() => setAuthModalOpen(true)}
+        onNewReportClick={() => {
+          if (currentRole === USER_ROLES.STUDENT) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        }}
+        onOpenChangePassword={() => setChangePasswordOpen(true)}
       />
 
-      <AuthModal
-        isOpen={authModalOpen}
-        onClose={() => setAuthModalOpen(false)}
+      <ChangePasswordModal
+        isOpen={changePasswordOpen}
+        onClose={() => setChangePasswordOpen(false)}
       />
 
       <main style={{ flex: 1, padding: '2.5rem 2rem', width: '100%' }}>
@@ -241,7 +261,17 @@ function App() {
           backgroundColor: 'rgba(7, 9, 14, 0.7)'
         }}
       >
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+        <div
+          style={{
+            maxWidth: '1200px',
+            margin: '0 auto',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '1rem'
+          }}
+        >
           <div>
             <strong>University Food Quality Assurance & Incident Reporting System</strong>
           </div>
@@ -250,7 +280,7 @@ function App() {
             <span>•</span>
             <span style={{ color: '#10b981' }}>Firebase Auth: jaaamin-rox</span>
             <span>•</span>
-            <span>&copy; 2026</span>
+            <span>Role: <strong style={{ textTransform: 'capitalize', color: '#f8fafc' }}>{currentRole}</strong></span>
           </div>
         </div>
       </footer>

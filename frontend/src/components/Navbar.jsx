@@ -1,10 +1,43 @@
 import React from 'react';
-import { ShieldAlert, LogIn, LogOut } from 'lucide-react';
+import { ShieldAlert, LogOut, KeyRound, Shield, GraduationCap, Crown } from 'lucide-react';
 import { USER_ROLES } from '../utils/constants';
 import { useAuthContext } from '../context/AuthContext';
 
-export const Navbar = ({ currentRole, onRoleChange, onNewReportClick, onOpenAuth }) => {
+export const Navbar = ({ currentRole, onNewReportClick, onOpenChangePassword }) => {
   const { currentUser, mongoUser, logout } = useAuthContext();
+
+  const getRoleBadge = (role) => {
+    switch (role) {
+      case USER_ROLES.ADMIN:
+        return {
+          icon: Crown,
+          label: 'Campus Admin',
+          color: '#f87171',
+          bg: 'rgba(239, 68, 68, 0.15)',
+          border: 'rgba(239, 68, 68, 0.3)'
+        };
+      case USER_ROLES.INSPECTOR:
+        return {
+          icon: Shield,
+          label: 'Safety Inspector',
+          color: '#34d399',
+          bg: 'rgba(16, 185, 129, 0.15)',
+          border: 'rgba(16, 185, 129, 0.3)'
+        };
+      case USER_ROLES.STUDENT:
+      default:
+        return {
+          icon: GraduationCap,
+          label: 'Student Reporter',
+          color: '#60a5fa',
+          bg: 'rgba(59, 130, 246, 0.15)',
+          border: 'rgba(59, 130, 246, 0.3)'
+        };
+    }
+  };
+
+  const badgeInfo = getRoleBadge(currentRole);
+  const BadgeIcon = badgeInfo.icon;
 
   return (
     <header
@@ -67,7 +100,6 @@ export const Navbar = ({ currentRole, onRoleChange, onNewReportClick, onOpenAuth
           >
             Live QA
           </span>
-          {/* Firebase Connected Indicator */}
           <span
             style={{
               display: 'inline-flex',
@@ -97,28 +129,26 @@ export const Navbar = ({ currentRole, onRoleChange, onNewReportClick, onOpenAuth
         </div>
       </div>
 
-      {/* Role Switcher Pills + Auth Controls */}
+      {/* Role Indicator & Authenticated User Actions */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
-        {/* Role Switcher Pills */}
-        <div className="pill-tabs" title="Switch active dashboard view">
-          <button
-            onClick={() => onRoleChange(USER_ROLES.STUDENT)}
-            className={`pill-tab ${currentRole === USER_ROLES.STUDENT ? 'active' : ''}`}
-          >
-            Student Reporter
-          </button>
-          <button
-            onClick={() => onRoleChange(USER_ROLES.INSPECTOR)}
-            className={`pill-tab ${currentRole === USER_ROLES.INSPECTOR ? 'active' : ''}`}
-          >
-            Inspector Triage
-          </button>
-          <button
-            onClick={() => onRoleChange(USER_ROLES.ADMIN)}
-            className={`pill-tab ${currentRole === USER_ROLES.ADMIN ? 'active' : ''}`}
-          >
-            Campus Admin
-          </button>
+        {/* Active Role Indicator Badge */}
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.4rem',
+            padding: '0.35rem 0.75rem',
+            borderRadius: '999px',
+            backgroundColor: badgeInfo.bg,
+            border: `1px solid ${badgeInfo.border}`,
+            color: badgeInfo.color,
+            fontSize: '0.8rem',
+            fontWeight: 700
+          }}
+          title={`Authenticated Role: ${badgeInfo.label}`}
+        >
+          <BadgeIcon size={14} />
+          <span>{badgeInfo.label}</span>
         </div>
 
         {/* Quick Report Trigger for students */}
@@ -131,8 +161,8 @@ export const Navbar = ({ currentRole, onRoleChange, onNewReportClick, onOpenAuth
           </button>
         )}
 
-        {/* Firebase Authentication Button / Account Pill */}
-        {currentUser ? (
+        {/* User Account Pill */}
+        {currentUser && (
           <div
             style={{
               display: 'flex',
@@ -149,13 +179,13 @@ export const Navbar = ({ currentRole, onRoleChange, onNewReportClick, onOpenAuth
                 width: '28px',
                 height: '28px',
                 borderRadius: '50%',
-                backgroundColor: 'rgba(59, 130, 246, 0.3)',
+                backgroundColor: `${badgeInfo.color}33`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: '0.75rem',
                 fontWeight: 700,
-                color: '#60a5fa'
+                color: badgeInfo.color
               }}
             >
               {(currentUser.displayName || currentUser.email || 'U')[0].toUpperCase()}
@@ -164,20 +194,46 @@ export const Navbar = ({ currentRole, onRoleChange, onNewReportClick, onOpenAuth
               <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-main)' }}>
                 {currentUser.displayName || currentUser.email?.split('@')[0]}
               </span>
-              <span style={{ fontSize: '0.65rem', color: '#10b981', textTransform: 'capitalize' }}>
-                {mongoUser?.role || 'User'}
+              <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+                {currentUser.email}
               </span>
             </div>
+
+            {/* Change Password Trigger */}
+            {onOpenChangePassword && (
+              <button
+                onClick={onOpenChangePassword}
+                title="Change Password"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: '4px',
+                  color: 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  marginLeft: '0.4rem',
+                  padding: '0.25rem 0.4rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem',
+                  fontSize: '0.7rem'
+                }}
+              >
+                <KeyRound size={13} />
+                <span>Password</span>
+              </button>
+            )}
+
+            {/* Sign Out Button */}
             <button
               onClick={logout}
-              title="Sign Out of Firebase"
+              title="Sign Out of Account"
               style={{
                 background: 'transparent',
                 border: 'none',
                 color: 'var(--text-muted)',
                 cursor: 'pointer',
-                marginLeft: '0.3rem',
-                padding: '0.2rem',
+                marginLeft: '0.25rem',
+                padding: '0.25rem',
                 display: 'flex',
                 alignItems: 'center'
               }}
@@ -185,14 +241,6 @@ export const Navbar = ({ currentRole, onRoleChange, onNewReportClick, onOpenAuth
               <LogOut size={15} />
             </button>
           </div>
-        ) : (
-          <button
-            onClick={onOpenAuth}
-            className="btn btn-secondary btn-sm"
-            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-          >
-            <LogIn size={15} /> Sign In
-          </button>
         )}
       </div>
     </header>

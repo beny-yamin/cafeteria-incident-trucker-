@@ -7,10 +7,7 @@ class AuthenticationService {
   async verifyFirebaseToken(idToken) {
     const isMockToken =
       idToken.startsWith('mock-') || idToken.startsWith('dev-') || idToken.startsWith('test-');
-    const allowMock =
-      process.env.NODE_ENV === 'development' ||
-      !process.env.FIREBASE_CLIENT_EMAIL ||
-      process.env.ALLOW_DEMO_TOKENS === 'true';
+    const allowMock = process.env.ALLOW_DEMO_TOKENS === 'true';
 
     if (isMockToken && allowMock) {
       const parts = idToken.split('-');
@@ -24,7 +21,7 @@ class AuthenticationService {
     }
 
     if (isMockToken && !allowMock) {
-      throw new ApiError(401, 'Demo mock tokens are disabled in production. Please sign in with Firebase.');
+      throw new ApiError(401, 'Demo authentication is disabled. Please sign in with your real email and password.');
     }
 
     // Ensure token is a valid string with 3 JWT segments before calling Firebase Admin

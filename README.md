@@ -113,3 +113,25 @@ cd frontend
 npm install
 npm run dev
 ```
+
+## Instant Role Credentials (Ready for Testing)
+
+The system is configured with dedicated accounts for each role in Firebase Authentication (`jaaamin-rox`) and synchronized with MongoDB. When opening the application, the dedicated **Authentication Page** is displayed. You can use the **1-click Autofill** buttons on the sign-in screen:
+
+| Role | Email | Password | Access & Dashboard |
+| :--- | :--- | :--- | :--- |
+| 🎓 **Student Reporter** | `student@university.edu` | `Student123!` | Student Dashboard: File hazard reports, view dining halls & active status |
+| 🛡️ **Safety Inspector** | `inspector@university.edu` | `Inspector123!` | Inspector Triage: Claim, investigate, resolve or dismiss incidents |
+| 👑 **Campus Administrator** | `admin@university.edu` | `Admin123!` | Campus Admin: Manage dining halls, assign inspectors, campus oversight |
+
+### Role-Based Routing
+- Access to all dashboards requires authentication (no unauthenticated demo preview).
+- Upon signing in, users are automatically taken directly to their assigned role's dashboard.
+- Users cannot manually bypass their assigned role.
+
+### Changing Passwords Later
+- **Inside the Application**: Click the **Password** button in the top navigation bar to open the **Change Password Modal** and set a new password anytime.
+- **Forgot Password**: Use the "Forgot password?" option on the Sign In page to receive a Firebase reset link.
+- **Firebase Console**: Manage accounts directly under Firebase Project `jaaamin-rox` > Authentication > Users.
+- **Reset Default Credentials**: Run `npm run seed:accounts` inside the `backend` folder.
+

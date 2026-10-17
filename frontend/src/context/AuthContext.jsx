@@ -9,7 +9,6 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null); // Firebase user
   const [mongoUser, setMongoUser] = useState(null); // Database synced user
   const [loading, setLoading] = useState(true);
-  const [demoRole, setDemoRole] = useState(null); // For local dev/demo role preview
 
   // Sync user with backend
   const syncWithBackend = useCallback(async (extraPayload = {}) => {
@@ -30,7 +29,6 @@ export const AuthProvider = ({ children }) => {
       setCurrentUser(user);
 
       if (user) {
-        setDemoRole(null);
         try {
           const token = await user.getIdToken();
           authService.setToken(token);
@@ -42,17 +40,14 @@ export const AuthProvider = ({ children }) => {
           console.error('Error handling Firebase Auth state change:', error);
         }
       } else {
-        // If not in demo mode, clear token
-        if (!demoRole) {
-          authService.removeToken();
-          setMongoUser(null);
-        }
+        authService.removeToken();
+        setMongoUser(null);
       }
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, [syncWithBackend, demoRole]);
+  }, [syncWithBackend]);
 
   // Sign In with Email & Password
   const loginWithEmail = async (email, password) => {
@@ -100,30 +95,24 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Quick Demo Login for rapid testing
-  const loginDemo = async (role = 'student') => {
-    setDemoRole(role);
-    const mockToken = `mock-${role}-token`;
-    authService.setToken(mockToken);
-    try {
-      const synced = await syncWithBackend({
-        role
-      });
-      return synced;
-    } catch (e) {
-      console.warn('Demo sync fallback:', e);
-    }
+  // Change Password for currently signed-in user
+  const changePassword = async (newPassword, currentPassword = null) => {
+    return await authService.changePassword(newPassword, currentPassword);
+  };
+
+  // Send Password Reset email
+  const resetPassword = async (email) => {
+    return await authService.resetPassword(email);
   };
 
   // Sign out
   const logout = async () => {
-    setDemoRole(null);
     await authService.logout();
     setCurrentUser(null);
     setMongoUser(null);
   };
 
-  const activeRole = mongoUser?.role || demoRole || 'student';
+  const activeRole = mongoUser?.role || 'student';
 
   return (
     <AuthContext.Provider
@@ -131,12 +120,12 @@ export const AuthProvider = ({ children }) => {
         currentUser,
         mongoUser,
         activeRole,
-        demoRole,
         loading,
         loginWithEmail,
         signupWithEmail,
         loginWithGoogle,
-        loginDemo,
+        changePassword,
+        resetPassword,
         logout,
         syncWithBackend
       }}

@@ -38,7 +38,6 @@ class DiningHallController {
       next(error);
     }
   }
-
   async createDiningHall(req, res, next) {
     try {
       const diningHall = await diningHallService.createDiningHall(req.body);

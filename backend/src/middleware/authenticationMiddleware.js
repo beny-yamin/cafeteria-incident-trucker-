@@ -8,7 +8,8 @@ const authenticate = async (req, res, next) => {
       throw new ApiError(401, 'Authorization token is required (Bearer <token>)');
     }
 
-    const token = authHeader.split('Bearer ')[1].trim();
+    const token = authHeader.split('Bearer ')[1].trim();// to take authentication token from header AND THEN
+
     if (!token) {
       throw new ApiError(401, 'Malformed authorization header');
     }
@@ -19,7 +20,6 @@ const authenticate = async (req, res, next) => {
     if (user.isActive === false) {
       throw new ApiError(403, 'User account has been deactivated');
     }
-
     req.user = user;
     req.firebaseUser = decodedToken;
     next();
